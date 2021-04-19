@@ -20,5 +20,5 @@ functionality to access and manage the application programming interface
 and `ucdp.ged()`, enabling retrieval of yearly data and geo-coded event
 data.
 
-When using a dataset, make sure to cite its authors as indicated on the
-[UCDP download page](https://www.ucdp.uu.se/downloads/).
+When using a UCDP dataset, make sure to cite its authors as indicated on
+the [UCDP download page](https://www.ucdp.uu.se/downloads/).

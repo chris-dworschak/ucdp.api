@@ -27,7 +27,7 @@ readRenviron(".Renv") # read in local file with personal ACLED access informatio
 
 This package is currently under development. It will provide functionality to access and manage the application programming interface (API) of the [Uppsala Conflict Data Program (UCDP)](https://www.ucdp.uu.se/). Intended functions are `ucdp.yearly()` and `ucdp.ged()`, enabling retrieval of yearly data and geo-coded event data. 
 
-When using a dataset, make sure to cite its authors as indicated on the [UCDP download page](https://www.ucdp.uu.se/downloads/).
+When using a UCDP dataset, make sure to cite its authors as indicated on the [UCDP download page](https://www.ucdp.uu.se/downloads/).
 
 
 
