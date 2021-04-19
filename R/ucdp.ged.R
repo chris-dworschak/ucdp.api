@@ -211,10 +211,15 @@ acled.api <- function(
   
   
   
-  country <- countrycode("Haiti", origin = "country.name", destination = "gwn", warn = TRUE)
-
+  country <- countrycode("India", origin = "country.name", destination = "gwn", warn = TRUE)
+  version <- "20.1"
+  
+  base.url <- paste0("https://ucdpapi.pcr.uu.se/api/gedevents/", version, "?pagesize=1000&page=")
+  filter.url <- paste0("&Country=", country, "&StartDate=2000-01-01&EndDate=2007-10-12")
+  
+  
   # GET call
-  url <- paste0("https://ucdpapi.pcr.uu.se/api/gedevents/20.1?pagesize=1&page=1&country_id=",country)
+  url <- paste0(base.url, 0, filter.url)
   response <- httr::GET(url)
   json.content <- jsonlite::fromJSON( httr::content(response, "text", encoding = 'UTF-8'),
                                       simplifyVector = FALSE)
@@ -224,6 +229,31 @@ acled.api <- function(
                              nrow = length(json.data) )
   ucdp.ged.data <- data.frame(ucdp.ged.matrix, stringsAsFactors = FALSE)
   names(ucdp.ged.data) <- names(json.content$Result[[1L]])
+  ucdp.ged.data
+  
+  if(json.content$TotalPages>1){
+  for(i in 1:(json.content$TotalPages-1)){
+    url <- paste0(base.url, i, filter.url)
+    response <- httr::GET(url)
+    json.content <- jsonlite::fromJSON( httr::content(response, "text", encoding = 'UTF-8'),
+                                        simplifyVector = FALSE)
+    json.data <- json.content$Result
+    ucdp.ged.matrix <- matrix( unlist(json.data),
+                               byrow = T,
+                               nrow = length(json.data) )
+    ucdp.ged.data.bind <- data.frame(ucdp.ged.matrix, stringsAsFactors = FALSE)
+    names(ucdp.ged.data.bind) <- names(json.content$Result[[1L]])
+    ucdp.ged.data <- rbind(ucdp.ged.data, ucdp.ged.data.bind)
+    
+  }
+  }
+  
+  
+  
+  
+  
+  
+  
   
   
   
