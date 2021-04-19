@@ -245,9 +245,8 @@ acled.api <- function(
     names(ucdp.ged.data.bind) <- names(json.content$Result[[1L]])
     ucdp.ged.data <- rbind(ucdp.ged.data, ucdp.ged.data.bind)
     
+  } 
   }
-  }
-  
   
   
   
