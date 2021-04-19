@@ -5,75 +5,9 @@
 #' geo-coded event data (GED).
 #' The function _`ucdp.ged()`_ makes it easy to retrieve a user-defined sample (or all of the
 #' available data) of UCDP GED. 
-#' @param email.address character string. Supply the email address that you registered with [ACLED access](https://developer.acleddata.com/).
-#' The email address can also be set as an environment variable using _`Sys.setenv(EMAIL_ADDRESS="your.email.address")`_, in
-#' which case this argument can be skipped. Usage examples below illustrate these two approaches.
-#' @param access.key character string. Supply your ACLED access key. The  access key can also be set as an environment variable
-#' using _`Sys.setenv(ACCESS_KEY="your.access.key")`_, in which case this argument can be skipped. Usage examples below illustrate these two approaches.
 #' @param country character vector. Supply one or more country names to narrow down which events should be retrieved. See the details
 #' below for information on how the arguments "country" and "region" interact.
-#' @param region numeric or character vector. Supply one or more region codes (numeric) or region names (character)
-#' to narrow down which events should be retrieved (see [ACLED's API user guide](https://acleddata.com/resources/general-guides/)
-#' for details on region codes and names). See the details below for information on how the arguments "country" and "region" interact.
-#' @param start.date character string. Supply the earliest date to be retrieved. Format: "yyyy-mm-dd".
-#' @param end.date character string. Supply the last date to be retrieved. Format: "yyyy-mm-dd".
-#' @param add.variables character vector. Supply the names of ACLED variables you wish to add to the
-#' default output (see [ACLED's codebook](https://acleddata.com/resources/general-guides/) for details). The default
-#' output includes: region, country, year, event_date, source, admin1, admin2, admin3, location, event_type, sub_event_type,
-#' interaction, fatalities.
-#' @param all.variables logical. When set to FALSE (default), a narrow default selection of variables is returned (which
-#' can be refined using the argument add.variables). If set to TRUE, all variables are included in the output (overrides
-#' argument add.variables).
-#' @param dyadic logical. When set to FALSE (default), monadic data is returned (one
-#' observation per event). If set to TRUE, dyadic data is returned.
-#' @param interaction numeric vector. Supply one or more interaction codes to narrow down which events should be
-#' retrieved (see [ACLED's codebook](https://acleddata.com/resources/general-guides/) for details.
-#' @param other.query character vector. Allows users to add their own ACLED API queries to the
-#' GET call. Vector elements are assumed to be individual queries, and are automatically separated by an & sign.
-#' @details The function _`acled.api()`_ is an R wrapper for
-#' the [Armed Conflict Location & Event Data Project](https://acleddata.com/) API.
-#' Internally it uses _`httr`_ to access the API, and _`jsonlite`_ to manage the JSON content that the call returns. The JSON data
-#' are converted into the base class _`data.frame`_. Variables are of class _`character`_ by default.
-#' Variables which only contain numbers as recognized by the regular
-#' expression `^[0-9]+$` are coerced into _`numeric`_ before the _`data.frame`_ object is returned. \cr \cr
-#' The user's registered email address and ACLED access key can be supplied as strings directly to their respective arguments,
-#' or set in advance as environment variables
-#' using \cr \cr _`Sys.setenv(EMAIL_ADDRESS="your.email.address")`_ and \cr \cr _`Sys.setenv(ACCESS_KEY="your.access.key")`_. \cr \cr
-#' If both the country argument and the region argument are NULL (default), all available countries are retrieved. The same applies to
-#' the time frame when both the start date and the end date are NULL (default). Note that the API cannot handle requests with only one
-#' of the dates specified (either none of them or both of them need to be supplied). \cr \cr
-#' The ACLED API combines the country argument and the region argument with a logical AND operator. Therefore, specifying e.g. the
-#' country "Togo" and the region "Southern Africa" leads the API to query for a country named "Togo" in the region "Southern Africa".
-#' In this case, no data will be returned as no events match this query.
-#' @return A data frame containing ACLED events.
-#' @import jsonlite
-#' @import httr
-#' @author Christoph Dworschak \cr Website: \href{https://www.chrisdworschak.com/}{<https://chrisdworschak.com/>}
-#' @references Uppsala Conflict Data Program (UCDP); <https://ucdp.uu.se/> \cr
-#' Pettersson, Therese, and Magnus Öberg. 2020. "Organized violence, 1989-2019." _Journal of Peace Research_ 57 (4): 597-613. \cr
-#' Sundberg, Ralph, and Erik Melander. 2013. "Introducing the UCDP Georeferenced Event Dataset." _Journal of Peace Research_ 50 (4): 523-532. 
-#' @examples
-#' \dontrun{
-#' # Email and access key provided as strings:
-#' my.data.frame1 <- acled.api(
-#'   email.address = "your.email.address",
-#'   access.key = "your.access.key",
-#'   region = c(1,7),
-#'   start.date = "2018-11-01",
-#'   end.date = "2018-11-31")
-#' head(my.data.frame1)
-#'
-#' # Email and access key provided as environment variables:
-#' my.data.frame2 <- acled.api(
-#'   email.address = Sys.getenv("EMAIL_ADDRESS"),
-#'   access.key = Sys.getenv("ACCESS_KEY"),
-#'   region = c(1,7),
-#'   start.date = "2020-01-01",
-#'   end.date = "2020-11-31",
-#'   interaction = c(10:18, 22:28),
-#'   add.variables = c("geo_precision", "time_precision"))
-#' sd(my.data.frame2$geo_precision)
-#' }
+#' @details If very large data call, it may take a long time and progress bar will appear that shows progress by which data is downloaded.
 #' @export
 #'
 acled.api <- function(
@@ -232,6 +166,7 @@ acled.api <- function(
   ucdp.ged.data
   
   if(json.content$TotalPages>1){
+    if(json.content$TotalPages>10){ pb <- txtProgressBar(min = 1, max = (json.content$TotalPages-1), style = 3) } 
   for(i in 1:(json.content$TotalPages-1)){
     url <- paste0(base.url, i, filter.url)
     response <- httr::GET(url)
@@ -244,8 +179,9 @@ acled.api <- function(
     ucdp.ged.data.bind <- data.frame(ucdp.ged.matrix, stringsAsFactors = FALSE)
     names(ucdp.ged.data.bind) <- names(json.content$Result[[1L]])
     ucdp.ged.data <- rbind(ucdp.ged.data, ucdp.ged.data.bind)
-    
+    if(json.content$TotalPages>10){ setTxtProgressBar(pb,i) } 
   } 
+  # possibly use close here for progress bar: if(json.content$TotalPages>10){ close(pb) }
   }
   
   
