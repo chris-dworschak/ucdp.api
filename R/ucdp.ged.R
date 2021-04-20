@@ -19,7 +19,7 @@ acled.api <- function(
   end.date = NULL,
   add.variables = NULL,
   all.variables = FALSE,
-  dyadic = FALSE,
+  dyadic = FALSE, 
   interaction = NULL,
   other.query = NULL){
 
